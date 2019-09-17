@@ -4,17 +4,16 @@ services:
     image: nunofgs/octoprint:alpine
     ports:
       - '5000:80'
-    #devices:
-      #- /dev/ttyACM0:/dev/ttyACM0
-      #- /dev/video0:/dev/video0
-    cap_add:
-      - SYS_PTRACE
+    privileged: true
     volumes:
       - /usr/local/etc/docker-octoprint:/data
-      - /dev/bus:/dev/bus:ro
-      - /dev/serial:/dev/serial:ro
+      - /home/dudeofawesome/Github/docker-compose-octoprint/scripts:/data/scripts
+      - /dev:/dev
+      - /var/run/docker.sock:/var/run/docker.sock
     environment:
-      CAMERA_DEV: '/dev/video0'
+      CAMERA_DEV: '/dev/v4l/by-path/platform-3f980000.usb-usb-0:1.5:1.0-video-index0'
       MJPEG_STREAMER_AUTOSTART: 'true'
-      MJPEG_STREAMER_INPUT: '-y -n -r 640x480'
+      #MJPEG_STREAMER_INPUT: 'input_uvc.so -y -n -r 640x480'
+      MJPEG_STREAMER_INPUT: 'input_uvc.so -y -n -r 1280x720'
+    command: 'sh -c "apk add zlib gphoto2; /usr/bin/supervisord -c /etc/supervisor/supervisord.conf"'
 
