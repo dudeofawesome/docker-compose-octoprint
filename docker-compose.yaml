@@ -7,13 +7,17 @@ services:
     privileged: true
     volumes:
       - /usr/local/etc/docker-octoprint:/data
-      - /home/dudeofawesome/Github/docker-compose-octoprint/scripts:/data/scripts
+      - ./scripts:/data/scripts
+      - ./startup.sh:/root/startup.sh
       - /dev:/dev
+      - /opt/vc:/opt/vc
+      - /usr/local/etc/docker-octoprint-arduino:/root/.arduino15
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
-      CAMERA_DEV: '/dev/v4l/by-path/platform-3f980000.usb-usb-0:1.5:1.0-video-index0'
+      CAMERA_DEV: '/dev/v4l/by-id/usb-Microsoft_Microsoft®_LifeCam_HD-5000-video-index0'
       MJPEG_STREAMER_AUTOSTART: 'true'
       #MJPEG_STREAMER_INPUT: 'input_uvc.so -y -n -r 640x480'
       MJPEG_STREAMER_INPUT: 'input_uvc.so -y -n -r 1280x720'
-    command: 'sh -c "apk add zlib gphoto2; /usr/bin/supervisord -c /etc/supervisor/supervisord.conf"'
+      command: '/root/startup.sh'
+      #command: 'sh -c "apk add zlib gphoto2 curl; curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | BINDIR=/usr/local/bin sh; /usr/bin/supervisord -c /etc/supervisor/supervisord.conf"'
 
