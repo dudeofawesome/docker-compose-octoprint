@@ -1,12 +1,13 @@
 version: '3'
 services:
   octoprint:
-    image: nunofgs/octoprint:alpine
+    image: nunofgs/octoprint:1.3.12-alpine
     ports:
       - '5000:80'
     privileged: true
     volumes:
       - /usr/local/etc/docker-octoprint:/data
+      - /usr/local/etc/docker-klipper:/klipper-config
       - ./scripts:/data/scripts
       - ./startup.sh:/root/startup.sh
       - /dev:/dev
@@ -18,6 +19,12 @@ services:
       MJPEG_STREAMER_AUTOSTART: 'true'
       #MJPEG_STREAMER_INPUT: 'input_uvc.so -y -n -r 640x480'
       MJPEG_STREAMER_INPUT: 'input_uvc.so -y -n -r 1280x720'
-      command: '/root/startup.sh'
-      #command: 'sh -c "apk add zlib gphoto2 curl; curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | BINDIR=/usr/local/bin sh; /usr/bin/supervisord -c /etc/supervisor/supervisord.conf"'
+      PYTHONPATH: '/usr/lib/python2.7/site-packages'
+    command: '/root/startup.sh'
+  klipper:
+    image: dudeofawesome/klipper:latest
+    privileged: true
+    volumes:
+      - /usr/local/etc/docker-klipper:/klipper-config
+      - /dev:/dev
 
