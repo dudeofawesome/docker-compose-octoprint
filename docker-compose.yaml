@@ -21,10 +21,11 @@ services:
       MJPEG_STREAMER_INPUT: 'input_uvc.so -y -n -r 1280x720'
       PYTHONPATH: '/usr/lib/python2.7/site-packages'
     command: '/root/startup.sh'
+    restart: unless-stopped
   klipper:
     image: dudeofawesome/klipper:latest
     privileged: true
     volumes:
       - /usr/local/etc/docker-klipper:/klipper-config
       - /dev:/dev
-
+    restart: unless-stopped
