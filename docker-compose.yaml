@@ -1,31 +1,35 @@
 version: '3'
 services:
   octoprint:
-    image: nunofgs/octoprint:1.3.12-alpine
+    image: docker.io/octoprint/octoprint:latest
     ports:
       - '5000:80'
     privileged: true
     volumes:
-      - /usr/local/etc/docker-octoprint:/data
-      - /usr/local/etc/docker-klipper:/klipper-config
+      - ~/.config/octoprint:/octoprint/octoprint
+      - ../docker-klipper:/klipper-config
       - ./scripts:/data/scripts
-      - ./startup.sh:/root/startup.sh
       - /dev:/dev
+      - /tmp:/tmp
       - /opt/vc:/opt/vc
-      - /usr/local/etc/docker-octoprint-arduino:/root/.arduino15
-      - /var/run/docker.sock:/var/run/docker.sock
+      - ~/.config/octoprint-arduino:/root/.arduino15
     environment:
       CAMERA_DEV: '/dev/v4l/by-id/usb-Microsoft_Microsoft®_LifeCam_HD-5000-video-index0'
       MJPEG_STREAMER_AUTOSTART: 'true'
       #MJPEG_STREAMER_INPUT: 'input_uvc.so -y -n -r 640x480'
       MJPEG_STREAMER_INPUT: 'input_uvc.so -y -n -r 1280x720'
       PYTHONPATH: '/usr/lib/python2.7/site-packages'
-    command: '/root/startup.sh'
     restart: unless-stopped
   klipper:
-    image: dudeofawesome/klipper:latest
+    # image: dudeofawesome/klipper:latest
+    build:
+      context: '../docker-klipper'
+      dockerfile: 'Dockerfile'
     privileged: true
     volumes:
-      - /usr/local/etc/docker-klipper:/klipper-config
-      - /dev:/dev
+      - '../klipper-config:/klipper-config'
+      - '../klipper-config/.config:/klipper/.config'
+      - '/dev:/dev'
+      - '/tmp:/tmp'
     restart: unless-stopped
+
