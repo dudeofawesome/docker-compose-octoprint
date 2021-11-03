@@ -1,24 +1,67 @@
 version: '3'
 services:
-  octoprint:
-    image: docker.io/octoprint/octoprint:latest
+  # octoprint:
+  #   image: docker.io/octoprint/octoprint:latest
+  #   ports:
+  #     - '5000:80'
+  #   privileged: true
+  #   volumes:
+  #     - '~/.config/octoprint:/octoprint/octoprint'
+  #     - './scripts:/data/scripts'
+  #     - '../klipper-config:/klipper-config'
+  #     - '/var/log/klippy.log:/var/log/klippy.log'
+  #     - '/dev:/dev'
+  #     - '/tmp:/tmp'
+  #     - '/opt/vc:/opt/vc'
+  #     - '~/.config/octoprint-arduino:/root/.arduino15'
+  #   environment:
+  #     CAMERA_DEV: '/dev/v4l/by-id/usb-Microsoft_Microsoft®_LifeCam_HD-5000-video-index0'
+  #     MJPEG_STREAMER_AUTOSTART: 'true'
+  #     #MJPEG_STREAMER_INPUT: 'input_uvc.so -y -n -r 640x480'
+  #     MJPEG_STREAMER_INPUT: 'input_uvc.so -y -n -r 1280x720'
+  #     PYTHONPATH: '/usr/lib/python2.7/site-packages'
+  #   restart: unless-stopped
+  fluidd:
+    image: 'docker.io/cadriel/fluidd:latest'
     ports:
-      - '5000:80'
-    privileged: true
+      - '3000:80'
     volumes:
-      - ~/.config/octoprint:/octoprint/octoprint
-      - ../docker-klipper:/klipper-config
-      - ./scripts:/data/scripts
-      - /dev:/dev
-      - /tmp:/tmp
-      - /opt/vc:/opt/vc
-      - ~/.config/octoprint-arduino:/root/.arduino15
-    environment:
-      CAMERA_DEV: '/dev/v4l/by-id/usb-Microsoft_Microsoft®_LifeCam_HD-5000-video-index0'
-      MJPEG_STREAMER_AUTOSTART: 'true'
-      #MJPEG_STREAMER_INPUT: 'input_uvc.so -y -n -r 640x480'
-      MJPEG_STREAMER_INPUT: 'input_uvc.so -y -n -r 1280x720'
-      PYTHONPATH: '/usr/lib/python2.7/site-packages'
+      - '../klipper-config:/klipper-config'
+      - '/var/log/klippy.log:/var/log/klippy.log'
+      - '/dev:/dev'
+      - '/tmp:/tmp'
+    # environment:
+      # JPEG_STREAM_HOST: ''
+      # JPEG_STREAM_PORT: ''
+    depends_on: 
+      - moonraker
+    restart: unless-stopped
+  moonraker:
+    # image: 'docker.io/mkuf/moonraker:nightly'
+    build:
+      # context: '../moonraker'
+      # dockerfile: 'Dockerfile'
+      context: './files/moonraker'
+      dockerfile: 'Containerfile'
+    volumes:
+      - './files/moonraker/moonraker.conf:/opt/cfg/moonraker.conf'
+      - '/var/lib/docker-moonraker:/home/klippy/.moonraker_database'
+      - '../klipper-config:/klipper-config'
+      - '/var/lib/gcode_files:/gcode_files'
+      - '/var/log/klippy.log:/var/log/klippy.log'
+      - '/dev:/dev'
+      - '/tmp:/tmp'
+      - '/opt/vc:/opt/vc'
+    ports:
+      - '7125:7125'
+    networks:
+      - 'klipper-net'
+    command: >-
+      --configfile=/opt/cfg/moonraker.conf
+      --logfile=/var/log/moonraker.log
+      --nologfile
+    depends_on: 
+      - klipper
     restart: unless-stopped
   klipper:
     # image: dudeofawesome/klipper:latest
@@ -29,7 +72,18 @@ services:
     volumes:
       - '../klipper-config:/klipper-config'
       - '../klipper-config/.config:/klipper/.config'
+      - '/var/lib/gcode_files:/gcode_files'
+      - '/var/log/klippy.log:/var/log/klippy.log'
       - '/dev:/dev'
       - '/tmp:/tmp'
+    entrypoint: >-
+      python /klipper/klippy/klippy.py
+      "/klipper-config/printer.cfg"
+      --logfile="/var/log/klippy.log"
+      --api-server="/tmp/klippy_uds.sock"
+    # command: '--api-server="/tmp/klippy_uds.sock"'
+    networks:
+      - 'klipper-net'
     restart: unless-stopped
-
+networks:
+  klipper-net:
