@@ -1,0 +1,17 @@
+tls:
+  certificates:
+    - certFile: '/etc/ssl-certs/cert.pem'
+      keyFile: '/etc/ssl-certs/key.pem'
+  stores:
+    default:
+      defaultCertificate:
+        certFile: '/etc/ssl-certs/cert.pem'
+        keyFile: '/etc/ssl-certs/key.pem'
+http:
+  middlewares:
+    hsts:
+      headers:
+        stsincludesubdomains: yes
+        stspreload: yes
+        stsseconds: 63072000
+        isdevelopment: no
