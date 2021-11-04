@@ -76,8 +76,7 @@ services:
     volumes:
       - './files/moonraker/moonraker.conf:/opt/cfg/moonraker.conf'
       - '/var/lib/docker-moonraker:/home/klippy/.moonraker_database'
-      - '../klipper-config:/klipper-config:ro'
-      - '../klipper-config/printer.cfg:/klipper-config/printer.cfg'
+      - '../klipper-config:/klipper-config'
       - '/var/lib/gcode_files:/gcode_files'
       - '/var/log/klippy.log:/var/log/klippy.log'
       - '/tmp:/tmp'
