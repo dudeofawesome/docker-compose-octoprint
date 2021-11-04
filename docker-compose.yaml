@@ -62,6 +62,8 @@ services:
       # JPEG_STREAM_PORT: ''
     depends_on: 
       - 'moonraker'
+    healthcheck:
+      test: 'curl --fail --silent http://localhost:80 || exit 1'
     restart: 'unless-stopped'
   moonraker:
     # image: 'docker.io/mkuf/moonraker:nightly'
@@ -92,6 +94,8 @@ services:
       --nologfile
     depends_on: 
       - 'klipper'
+    healthcheck:
+      test: 'curl --fail --silent http://localhost:7125/printer/info'
     restart: 'unless-stopped'
   klipper:
     build:
