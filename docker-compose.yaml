@@ -94,27 +94,23 @@ services:
       - 'klipper'
     restart: 'unless-stopped'
   klipper:
-    # image: dudeofawesome/klipper:latest
     build:
       context: '../docker-klipper'
       dockerfile: 'Dockerfile'
-    privileged: yes
     volumes:
       - '../klipper-config:/klipper-config:ro'
       - '../klipper-config/printer.cfg:/klipper-config/printer.cfg'
       - '../klipper-config/.config:/klipper/.config'
       - '/var/lib/gcode_files:/gcode_files'
       - '/var/log/klippy.log:/var/log/klippy.log'
-      - '/dev:/dev'
       - '/tmp:/tmp'
-    entrypoint: >-
-      python /klipper/klippy/klippy.py
-      "/klipper-config/printer.cfg"
-      --logfile="/var/log/klippy.log"
-      --api-server="/tmp/klippy_uds.sock"
-    # command: '--api-server="/tmp/klippy_uds.sock"'
-    networks:
-      - 'klipper-net'
+    devices:
+      - '/dev/serial/by-id/usb-Klipper_stm32f103xe_38FFD4055243363809620543-if00:/dev/serial/by-id/usb-Klipper_skr_mini_e3'
+    environment:
+      API_SOCKET: '/tmp/klippy_uds.sock'
+      API_SOCKET_UID_GID: '1000:984'
+    healthcheck:
+      test: 'test "$$(env | grep API_SOCKET | cut -d = -f2-)"'
     restart: 'unless-stopped'
 networks:
   traefik-net:
