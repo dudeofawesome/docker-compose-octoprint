@@ -1,34 +1,34 @@
-version: "3"
+version: '3'
 services:
   traefik:
     image: docker.io/library/traefik:v2.5
     command:
-      - "--api.dashboard=true" # enables the web UI
-      - "--api.insecure=true" # enables the web UI
-      - "--ping=true" # enables healthcheck route
-      - "--providers.docker" # tell Traefik to listen to docker
-      - "--providers.docker.exposedbydefault=false" # do not expose containers unless explicitly told so
-      - "--providers.docker.network=docker-compose-octoprint_traefik-net" # set traefik's network
-      - "--log.level=DEBUG" # set log level
-      - "--accesslog=true" # enable access logs
-      - "--accessLog.filePath=/var/log/access.log" # set access log path
+      - '--api.dashboard=true' # enables the web UI
+      - '--api.insecure=true' # enables the web UI
+      - '--ping=true' # enables healthcheck route
+      - '--providers.docker' # tell Traefik to listen to docker
+      - '--providers.docker.exposedbydefault=false' # do not expose containers unless explicitly told so
+      - '--providers.docker.network=docker-compose-octoprint_traefik-net' # set traefik's network
+      - '--log.level=DEBUG' # set log level
+      - '--accesslog=true' # enable access logs
+      - '--accessLog.filePath=/var/log/access.log' # set access log path
       # - '--accessLog.format='
-      - "--providers.file.directory=/traefik/dynamic" # use dynamic config files
-      - "--entryPoints.http.address=:80" # listen on 80
-      - "--entryPoints.https.address=:443" # listen on 443
-      - "--entryPoints.traefik.address=:8080" # listen on 8080
+      - '--providers.file.directory=/traefik/dynamic' # use dynamic config files
+      - '--entryPoints.http.address=:80' # listen on 80
+      - '--entryPoints.https.address=:443' # listen on 443
+      - '--entryPoints.traefik.address=:8080' # listen on 8080
       # redirect http to https
-      - "--entryPoints.http.http.redirections.entryPoint.to=https"
-      - "--entryPoints.http.http.redirections.entryPoint.scheme=https"
-      - "--serversTransport.insecureSkipVerify=true" # disable certificate verification for load balance endpoints
+      - '--entryPoints.http.http.redirections.entryPoint.to=https'
+      - '--entryPoints.http.http.redirections.entryPoint.scheme=https'
+      - '--serversTransport.insecureSkipVerify=true' # disable certificate verification for load balance endpoints
     # user: '${USER_ID}:${GROUP_ID}'
     ports:
-      - "8008:80" # HTTP port
-      - "8008:80/udp" # HTTP port
-      - "4443:443" # HTTPS port
-      - "4443:443/udp" # HTTPS port
-      - "3000:8080" # dashboard
-      - "3000:8080/udp" # dashboard
+      - '8008:80' # HTTP port
+      - '8008:80/udp' # HTTP port
+      - '4443:443' # HTTPS port
+      - '4443:443/udp' # HTTPS port
+      - '3000:8080' # dashboard
+      - '3000:8080/udp' # dashboard
     networks:
       - traefik-net
     volumes:
@@ -38,78 +38,78 @@ services:
       - ./files/traefik/dynamic:/traefik/dynamic
       - /var/log/traefik:/var/log
     healthcheck:
-      test: "traefik healthcheck --ping"
-    restart: "unless-stopped"
+      test: 'traefik healthcheck --ping'
+    restart: 'unless-stopped'
 
   fluidd:
-    image: "docker.io/cadriel/fluidd:latest"
+    image: 'docker.io/cadriel/fluidd:latest'
     labels:
-      traefik.enable: "true"
-      traefik.http.routers.fluidd.rule: "PathPrefix(`/`)"
-      traefik.http.routers.fluidd.tls: "true"
-      traefik.http.services.fluidd.loadbalancer.server.port: "80"
+      traefik.enable: 'true'
+      traefik.http.routers.fluidd.rule: 'PathPrefix(`/`)'
+      traefik.http.routers.fluidd.tls: 'true'
+      traefik.http.services.fluidd.loadbalancer.server.port: '80'
     networks:
-      - "traefik-net"
+      - 'traefik-net'
     volumes:
-      - "../klipper-config:/klipper-config"
-      - "/var/log/klippy.log:/var/log/klippy.log"
-      - "/dev:/dev"
-      - "/tmp:/tmp"
+      - '../klipper-config:/klipper-config'
+      - '/var/log/klippy.log:/var/log/klippy.log'
+      - '/dev:/dev'
+      - '/tmp:/tmp'
     # environment:
     # JPEG_STREAM_HOST: ''
     # JPEG_STREAM_PORT: ''
     depends_on:
-      - "moonraker"
+      - 'moonraker'
     healthcheck:
-      test: "curl --fail --silent http://localhost:80 || exit 1"
-    restart: "unless-stopped"
+      test: 'curl --fail --silent http://localhost:80 || exit 1'
+    restart: 'unless-stopped'
   moonraker:
     # image: 'docker.io/mkuf/moonraker:nightly'
     build:
-      context: "../moonraker"
-      dockerfile: "Dockerfile"
+      context: '../moonraker'
+      dockerfile: 'Dockerfile'
     labels:
-      traefik.enable: "true"
-      traefik.http.routers.moonraker.rule: "PathPrefix(`/websocket`,`/printer`,`/api`,`/access`,`/machine`,`/server`)"
-      traefik.http.routers.moonraker.tls: "true"
-      traefik.http.services.moonraker.loadbalancer.server.port: "7125"
+      traefik.enable: 'true'
+      traefik.http.routers.moonraker.rule: 'PathPrefix(`/websocket`,`/printer`,`/api`,`/access`,`/machine`,`/server`)'
+      traefik.http.routers.moonraker.tls: 'true'
+      traefik.http.services.moonraker.loadbalancer.server.port: '7125'
     volumes:
-      - "./files/moonraker/moonraker.conf:/opt/cfg/moonraker.conf"
-      - "/var/lib/docker-moonraker:/home/klippy/.moonraker_database"
-      - "../klipper-config:/klipper-config"
-      - "/var/lib/gcode_files:/gcode_files"
-      - "/var/log/klippy.log:/var/log/klippy.log"
-      - "/tmp:/tmp"
-      - "/opt/vc:/opt/vc"
+      - './files/moonraker/moonraker.conf:/opt/cfg/moonraker.conf'
+      - '/var/lib/docker-moonraker:/home/klippy/.moonraker_database'
+      - '../klipper-config:/klipper-config'
+      - '/var/lib/gcode_files:/gcode_files'
+      - '/var/log/klippy.log:/var/log/klippy.log'
+      - '/tmp:/tmp'
+      - '/opt/vc:/opt/vc'
     networks:
-      - "traefik-net"
+      - 'traefik-net'
     command: >-
       --configfile=/opt/cfg/moonraker.conf
       --logfile=/var/log/moonraker.log
       --nologfile
     depends_on:
-      - "klipper"
+      - 'klipper'
     healthcheck:
-      test: "curl --fail --silent http://localhost:7125/printer/info"
-    restart: "unless-stopped"
+      test: 'curl --fail --silent http://localhost:7125/printer/info'
+    restart: 'unless-stopped'
   klipper:
     build:
-      context: "../docker-klipper"
-      dockerfile: "Dockerfile"
+      context: '../docker-klipper'
+      dockerfile: 'Dockerfile'
     volumes:
-      - "../klipper-config:/klipper-config:ro"
-      - "../klipper-config/printer.cfg:/klipper-config/printer.cfg"
-      - "../klipper-config/.config:/klipper/.config"
-      - "/var/lib/gcode_files:/gcode_files"
-      - "/var/log/klippy.log:/var/log/klippy.log"
-      - "/tmp:/tmp"
+      - '../klipper-config:/klipper-config:ro'
+      - '../klipper-config/printer.cfg:/klipper-config/printer.cfg'
+      - '../klipper-config/.config:/klipper/.config'
+      - '/var/lib/gcode_files:/gcode_files'
+      - '/var/log/klippy:/var/log/klippy'
+      - '/tmp:/tmp'
     devices:
-      - "/dev/serial/by-id/usb-Klipper_stm32f103xe_38FFD4055243363809620543-if00:/dev/serial/by-id/usb-Klipper_skr_mini_e3"
+      - '/dev/serial/by-id/usb-Klipper_stm32f103xe_38FFD4055243363809620543-if00:/dev/serial/by-id/usb-Klipper_skr_mini_e3'
     environment:
-      API_SOCKET: "/tmp/klippy_uds.sock"
-      API_SOCKET_UID_GID: "1000:984"
+      API_SOCKET: '/tmp/klippy_uds.sock'
+      API_SOCKET_UID_GID: '1000:984'
     healthcheck:
       test: 'test "$$(env | grep API_SOCKET | cut -d = -f2-)"'
-    restart: "unless-stopped"
+    restart: 'unless-stopped'
 networks:
   traefik-net:
