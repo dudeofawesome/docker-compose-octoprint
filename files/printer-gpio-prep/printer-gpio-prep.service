@@ -1,0 +1,16 @@
+[Unit]
+Description=Prepare GPIO pins for use with printer
+Requires=systemd-udevd.service
+After=systemd-udev-settle.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+WorkingDirectory=/home/dudeofawesome/git/docker-compose-octoprint/files/printer-gpio-prep
+ExecStart=bash enable-gpio.sh
+ExecStop=bash disable-gpio.sh
+Restart=no
+User=dudeofawesome
+
+[Install]
+WantedBy=docker.service
