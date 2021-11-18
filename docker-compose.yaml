@@ -87,13 +87,14 @@ services:
   moonraker:
     # image: 'docker.io/mkuf/moonraker:nightly'
     build:
-      context: '../moonraker'
-      dockerfile: 'Dockerfile'
+      context: './files/moonraker'
+      dockerfile: 'Containerfile'
     labels:
       traefik.enable: 'true'
       traefik.http.routers.moonraker.rule: 'PathPrefix(`/websocket`,`/printer`,`/api`,`/access`,`/machine`,`/server`)'
       traefik.http.routers.moonraker.tls: 'true'
       traefik.http.services.moonraker.loadbalancer.server.port: '7125'
+    user: '${USER_ID}:${GROUP_ID_GPIO}'
     volumes:
       - './files/moonraker/moonraker.conf:/opt/cfg/moonraker.conf'
       - '/var/lib/docker-moonraker:/home/klippy/.moonraker_database'
@@ -102,6 +103,8 @@ services:
       - '/var/log/klippy.log:/var/log/klippy.log'
       - '/tmp:/tmp'
       - '/opt/vc:/opt/vc'
+    devices:
+      - '/dev/gpiochip0:/dev/gpiochip0'
     networks:
       - 'traefik-net'
     command: >-
@@ -110,8 +113,6 @@ services:
       --nologfile
     depends_on:
       - 'klipper'
-    healthcheck:
-      test: 'curl --fail --silent http://localhost:7125/printer/info'
     restart: 'unless-stopped'
   klipper:
     build:
