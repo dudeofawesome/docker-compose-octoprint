@@ -63,6 +63,27 @@ services:
     healthcheck:
       test: 'curl --fail --silent http://localhost:80 || exit 1'
     restart: 'unless-stopped'
+  mjpg-streamer:
+    # image: 'ghcr.io/davralin/mjpg-streamer:latest'
+    build:
+      context: './files/mjpg-streamer'
+      dockerfile: 'Containerfile'
+    labels:
+      traefik.enable: 'true'
+      traefik.http.routers.mjpg-streamer.rule: 'PathPrefix(`/webcam`)'
+      traefik.http.routers.mjpg-streamer.tls: 'true'
+      traefik.http.routers.mjpg-streamer.middlewares: 'mjpg-streamer@docker'
+      traefik.http.services.mjpg-streamer.loadbalancer.server.port: '8080'
+      traefik.http.middlewares.mjpg-streamer.replacepathregex.regex: '^/webcam/(.*)'
+      traefik.http.middlewares.mjpg-streamer.replacepathregex.replacement: '/$$1'
+    networks:
+      - 'traefik-net'
+    devices:
+      - '/dev/video0'
+    command: 'input_uvc.so --device /dev/video0 --fps 15 --resolution 1280x720'
+    healthcheck:
+      test: 'test /dev/video0 || exit 1'
+    restart: 'unless-stopped'
   moonraker:
     # image: 'docker.io/mkuf/moonraker:nightly'
     build:
