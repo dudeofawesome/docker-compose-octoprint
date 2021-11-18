@@ -130,7 +130,7 @@ services:
       - '/dev/serial/by-id/usb-Klipper_stm32f103xe_38FFD4055243363809620543-if00:/dev/serial/by-id/usb-Klipper_skr_mini_e3'
     environment:
       API_SOCKET: '/tmp/klippy_uds.sock'
-      API_SOCKET_UID_GID: '1000:984'
+      API_SOCKET_UID_GID: '${USER_ID}:${GROUP_ID}'
       LOGFILE: '/var/log/klippy/klippy.log'
     healthcheck:
       test: >-
