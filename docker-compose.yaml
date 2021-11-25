@@ -55,9 +55,6 @@ services:
       - '/var/log/klippy.log:/var/log/klippy.log'
       - '/dev:/dev'
       - '/tmp:/tmp'
-    # environment:
-    # JPEG_STREAM_HOST: ''
-    # JPEG_STREAM_PORT: ''
     depends_on:
       - 'moonraker'
     healthcheck:
@@ -117,21 +114,25 @@ services:
   klipper:
     build:
       context: '../docker-klipper'
-      dockerfile: 'Dockerfile'
+      dockerfile: 'Containerfile'
+    labels:
+      com.centurylinklabs.watchtower.monitor-only: 'true'
     volumes:
-      # - '../klipper-config:/klipper-config:ro'
-      # - '../klipper-config/printer.cfg:/klipper-config/printer.cfg'
       - '../klipper-config:/klipper-config'
       - '../klipper-config/.config:/klipper/.config'
+      - '../klipper-config/out:/klipper/out'
       - '/var/lib/gcode_files:/gcode_files'
       - '/var/log/klippy:/var/log/klippy'
       - '/tmp:/tmp'
-    devices:
-      - '/dev/serial/by-id/usb-Klipper_stm32f103xe_38FFD4055243363809620543-if00:/dev/serial/by-id/usb-Klipper_skr_mini_e3'
+      - '/dev:/dev'
+    # devices:
+    #   - '/dev/serial/by-id/usb-Klipper_stm32f103xe_38FFD4055243363809620543-if00:/dev/serial/by-id/usb-Klipper_skr_mini_e3'
     environment:
       API_SOCKET: '/tmp/klippy_uds.sock'
       API_SOCKET_UID_GID: '${USER_ID}:${GROUP_ID}'
       LOGFILE: '/var/log/klippy/klippy.log'
+    depends_on:
+      - 'klipper-mcu'
     healthcheck:
       test: >-
         test /dev/serial/by-id/usb-Klipper_skr_mini_e3 &&
@@ -140,6 +141,24 @@ services:
       timeout: '10s'
       retries: 2
       start_period: '40s'
+    restart: 'unless-stopped'
+  klipper-mcu:
+    build:
+      context: '../docker-klipper'
+      dockerfile: 'Containerfile.pi_mcu'
+    labels:
+      com.centurylinklabs.watchtower.monitor-only: 'true'
+    volumes:
+      - '/tmp:/tmp'
+      - '/dev:/dev'
+    # devices:
+    #   - '/dev/gpiochip0:/dev/gpiochip0'
+    healthcheck:
+      test: 'test /tmp/klipper_host_mcu'
+      interval: '30s'
+      timeout: '10s'
+      retries: 2
+      start_period: '10s'
     restart: 'unless-stopped'
 networks:
   traefik-net:
