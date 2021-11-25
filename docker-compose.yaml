@@ -160,5 +160,42 @@ services:
       retries: 2
       start_period: '10s'
     restart: 'unless-stopped'
+
+  watchtower:
+    image: 'docker.io/containrrr/watchtower'
+    # labels:
+    #   com.centurylinklabs.watchtower.lifecycle.pre-update: 'exit 1'
+    volumes:
+      - '/var/run/docker.sock:/var/run/docker.sock'
+      - '${HOME}/.docker/config.json:/config.json'
+      - '/etc/timezone:/etc/timezone:ro'
+    # TODO: figure out how to get watchtower to not kill a print in progress
+    # command: --monitor-only
+    environment:
+      TZ: '${TIMEZONE}'
+      WATCHTOWER_SCHEDULE: '0 0 18 * * *'
+      WATCHTOWER_INCLUDE_RESTARTING: 'true'
+      # WATCHTOWER_LIFECYCLE_HOOKS: 'true'
+
+      WATCHTOWER_NOTIFICATIONS: 'email gotify'
+      WATCHTOWER_NOTIFICATION_EMAIL_FROM: '${EMAIL_SMTP_SENDER_NAME}@${EMAIL_SMTP_SENDER_DOMAIN}'
+      WATCHTOWER_NOTIFICATION_EMAIL_TO: '${EMAIL_SERVER_OWNER}'
+      WATCHTOWER_NOTIFICATION_EMAIL_SERVER: '${EMAIL_SMTP_HOST}'
+      WATCHTOWER_NOTIFICATION_EMAIL_SERVER_PORT: '${EMAIL_SMTP_PORT}'
+      WATCHTOWER_NOTIFICATION_EMAIL_SERVER_USER: '${EMAIL_SMTP_USERNAME}'
+      WATCHTOWER_NOTIFICATION_EMAIL_SERVER_PASSWORD: '${EMAIL_SMTP_PASSWORD}'
+      WATCHTOWER_NOTIFICATION_GOTIFY_URL: 'https://gotify.orleans.io/'
+      WATCHTOWER_NOTIFICATION_GOTIFY_TOKEN: '${WATCHTOWER_GOTIFY_TOKEN}'
+    restart: 'unless-stopped'
+
+  host-hostnames:
+    # image: 'docker.io/dvdarias/docker-hoster'
+    build:
+      context: '../docker-hoster'
+      dockerfile: 'Dockerfile'
+    volumes:
+      - '/var/run/docker.sock:/tmp/docker.sock'
+      - '/etc/hosts:/tmp/hosts'
+    restart: 'unless-stopped'
 networks:
   traefik-net:
