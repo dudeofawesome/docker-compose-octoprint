@@ -23,10 +23,14 @@ RUN apt-get update \
     libopenjp2-7 \
     python3-libgpiod \
     curl \
+    ffmpeg \
+    git \
+    iproute2 \
     libcurl4-openssl-dev \
     libssl-dev \
     liblmdb0 \
     libsodium-dev \
+    wget \
     zlib1g-dev \
   && apt-get clean
 
@@ -39,6 +43,9 @@ RUN groupadd moonraker --gid 1000 \
   && useradd moonraker --uid 1000 --gid moonraker \
   && usermod moonraker --append --groups dialout \
   && chown -R moonraker:moonraker /opt/*
+
+RUN git clone https://github.com/mainsail-crew/moonraker-timelapse.git /lib/moonraker-timelapse \
+  && ln -s /lib/moonraker-timelapse/component/timelapse.py /opt/moonraker/moonraker/components/
 
 ENV PATH="/opt/vc/bin:${PATH}"
 
