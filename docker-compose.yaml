@@ -1,6 +1,7 @@
 version: '3'
 services:
   traefik:
+    container_name: traefik
     image: docker.io/library/traefik:v2.5
     command:
       - '--api.dashboard=true' # enables the web UI
@@ -45,6 +46,7 @@ services:
     restart: 'unless-stopped'
 
   fluidd:
+    container_name: fluidd
     image: 'docker.io/cadriel/fluidd:latest'
     labels:
       traefik.enable: 'true'
@@ -64,6 +66,7 @@ services:
       test: 'curl --fail --silent http://localhost:80 || exit 1'
     restart: 'unless-stopped'
   mjpg-streamer:
+    container_name: mjpg-streamer
     # image: 'ghcr.io/davralin/mjpg-streamer:latest'
     build:
       context: './files/mjpg-streamer'
@@ -80,11 +83,12 @@ services:
       - 'traefik-net'
     devices:
       - '/dev/video0'
-    command: 'input_uvc.so --device /dev/video0 --fps 15 --resolution 1280x720'
+    command: '"input_uvc.so --device /dev/video0 --fps 15 --resolution 1280x1024"'
     healthcheck:
       test: 'test /dev/video0 || exit 1'
     restart: 'unless-stopped'
   moonraker:
+    container_name: moonraker
     # image: 'docker.io/mkuf/moonraker:nightly'
     build:
       context: './files/moonraker'
@@ -116,6 +120,7 @@ services:
       - 'klipper'
     restart: 'unless-stopped'
   klipper:
+    container_name: klipper
     build:
       context: '../docker-klipper'
       dockerfile: 'Containerfile'
@@ -129,8 +134,9 @@ services:
       - '/var/log/klippy:/var/log/klippy'
       - '/tmp:/tmp'
       - '/dev:/dev'
-    # devices:
-    #   - '/dev/serial/by-id/usb-Klipper_stm32f103xe_38FFD4055243363809620543-if00:/dev/serial/by-id/usb-Klipper_skr_mini_e3'
+    devices:
+      # - '/dev/serial/by-id/usb-Klipper_stm32f103xe_38FFD4055243363809620543-if00:/dev/serial/by-id/usb-Klipper_skr_mini_e3'
+      - '/dev/serial/by-id/usb-Klipper_stm32f103xe_38FFD4055243363809620543-if00:/dev/serial/by-id/usb-Klipper_stm32f103xe_38FFD4055243363809620543-if00'
     environment:
       API_SOCKET: '/tmp/klippy_uds.sock'
       API_SOCKET_UID_GID: '${USER_ID}:${GROUP_ID}'
@@ -147,6 +153,7 @@ services:
       start_period: '40s'
     restart: 'unless-stopped'
   klipper-mcu:
+    container_name: klipper-mcu
     build:
       context: '../docker-klipper'
       dockerfile: 'Containerfile.pi_mcu'
@@ -166,6 +173,7 @@ services:
     restart: 'unless-stopped'
 
   watchtower:
+    container_name: watchtower
     image: 'docker.io/containrrr/watchtower'
     # labels:
     #   com.centurylinklabs.watchtower.lifecycle.pre-update: 'exit 1'
@@ -193,6 +201,7 @@ services:
     restart: 'unless-stopped'
 
   host-hostnames:
+    container_name: host-hostnames
     # image: 'docker.io/dvdarias/docker-hoster'
     build:
       context: '../docker-hoster'
